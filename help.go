@@ -149,10 +149,12 @@ func renderDefaultGeneralHelpEmbed(router *Router, page int) (*discordgo.Message
 	// Prepare the fields for the embed
 	fields := make([]*discordgo.MessageEmbedField, len(displayCommands))
 	for index, command := range displayCommands {
-		fields[index] = &discordgo.MessageEmbedField{
-			Name:   command.Name,
-			Value:  "`" + command.Description + "`",
-			Inline: false,
+		if !command.Hidden {
+			fields[index] = &discordgo.MessageEmbedField{
+				Name:   command.Name,
+				Value:  "`" + command.Description + "`",
+				Inline: false,
+			}
 		}
 	}
 

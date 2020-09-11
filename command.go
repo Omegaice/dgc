@@ -14,6 +14,7 @@ type Command struct {
 	Example     string
 	Flags       []string
 	IgnoreCase  bool
+	Hidden      bool
 	SubCommands []*Command
 	RateLimiter RateLimiter
 	Handler     ExecutionHandler

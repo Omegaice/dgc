@@ -97,7 +97,7 @@ func generalHelpCommand(ctx *Ctx) {
 	embed, _ := renderDefaultGeneralHelpEmbed(ctx.Router, 1)
 	message, err := ctx.Session.ChannelMessageSendEmbed(channelID, embed)
 	if err != nil {
-		log.Println(err)
+		log.Printf("%+v %v\n", embed, err)
 		return
 	}
 

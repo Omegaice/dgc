@@ -75,6 +75,7 @@ func (router *Router) RegisterDefaultHelpCommand(session *discordgo.Session, rat
 		Usage:       "help [command name]",
 		Example:     "help yourCommand",
 		IgnoreCase:  true,
+		Hidden:      false,
 		RateLimiter: rateLimiter,
 		Handler:     generalHelpCommand,
 	})

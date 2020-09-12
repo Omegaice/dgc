@@ -95,7 +95,11 @@ func generalHelpCommand(ctx *Ctx) {
 
 	// Send the general help embed
 	embed, _ := renderDefaultGeneralHelpEmbed(ctx.Router, 1)
-	message, _ := ctx.Session.ChannelMessageSendEmbed(channelID, embed)
+	message, err := ctx.Session.ChannelMessageSendEmbed(channelID, embed)
+	if err != nil {
+		log.Println(err)
+		return
+	}
 
 	// Add the reactions to the message
 	session.MessageReactionAdd(channelID, message.ID, "⬅️")

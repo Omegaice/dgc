@@ -42,7 +42,10 @@ func (router *Router) RegisterDefaultHelpCommand(session *discordgo.Session, rat
 		switch reactionName {
 		case "⬅️":
 			// Remove the reaction
-			session.MessageReactionRemove(channelID, messageID, reactionName, userID)
+			err := session.MessageReactionRemove(channelID, messageID, reactionName, userID)
+			if err != nil {
+				log.Println(err)
+			}
 
 			// Update the help message
 			embed, newPage := renderDefaultGeneralHelpEmbed(router, page-1)
@@ -95,11 +98,7 @@ func generalHelpCommand(ctx *Ctx) {
 
 	// Send the general help embed
 	embed, _ := renderDefaultGeneralHelpEmbed(ctx.Router, 1)
-	message, err := ctx.Session.ChannelMessageSendEmbed(channelID, embed)
-	if err != nil {
-		log.Printf("%+v %v\n", embed, err)
-		return
-	}
+	message, _ := ctx.Session.ChannelMessageSendEmbed(channelID, embed)
 
 	// Add the reactions to the message
 	session.MessageReactionAdd(channelID, message.ID, "⬅️")
@@ -119,10 +118,16 @@ func specificHelpCommand(ctx *Ctx) {
 	var command *Command
 	for index, commandName := range commandNames {
 		if index == 0 {
-			command = ctx.Router.GetCmd(commandName)
+			c := ctx.Router.GetCmd(commandName)
+			if !c.Hidden {
+				command = c
+			}
 			continue
 		}
-		command = command.GetSubCmd(commandName)
+		c := command.GetSubCmd(commandName)
+		if !c.Hidden {
+			command = c
+		}
 	}
 
 	// Send the help embed
@@ -208,9 +213,11 @@ func renderDefaultSpecificHelpEmbed(ctx *Ctx, command *Command) *discordgo.Messa
 	// Define the sub commands string
 	subCommands := "No sub commands"
 	if len(command.SubCommands) > 0 {
-		subCommandNames := make([]string, len(command.SubCommands))
-		for index, subCommand := range command.SubCommands {
-			subCommandNames[index] = subCommand.Name
+		subCommandNames := []string{}
+		for _, subCommand := range command.SubCommands {
+			if !subCommand.Hidden {
+				subCommandNames = append(subCommandNames, subCommand.Name)
+			}
 		}
 		subCommands = "`" + strings.Join(subCommandNames, "`, `") + "`"
 	}

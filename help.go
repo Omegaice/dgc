@@ -135,8 +135,16 @@ func renderDefaultGeneralHelpEmbed(router *Router, page int) (*discordgo.Message
 	commands := router.Commands
 	prefix := router.Prefixes[0]
 
+	vCommands := []*Command{}
+
+	for _, command := range commands {
+		if !command.Hidden {
+			vCommands = append(vCommands, command)
+		}
+	}
+
 	// Calculate the amount of pages
-	pageAmount := int(math.Ceil(float64(len(commands)) / 5))
+	pageAmount := int(math.Ceil(float64(len(vCommands)) / 5))
 	if page > pageAmount {
 		page = pageAmount
 	}
@@ -148,14 +156,13 @@ func renderDefaultGeneralHelpEmbed(router *Router, page int) (*discordgo.Message
 	startingIndex := (page - 1) * 5
 	endingIndex := startingIndex + 5
 	if page == pageAmount {
-		endingIndex = len(commands)
+		endingIndex = len(vCommands)
 	}
-	displayCommands := commands[startingIndex:endingIndex]
+	displayCommands := vCommands[startingIndex:endingIndex]
 
 	// Prepare the fields for the embed
 	fields := []*discordgo.MessageEmbedField{}
-	for index, command := range displayCommands {
-		log.Println(index, command)
+	for _, command := range displayCommands {
 		if !command.Hidden {
 			fields = append(fields, &discordgo.MessageEmbedField{
 				Name:   command.Name,

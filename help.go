@@ -1,6 +1,7 @@
 package dgc
 
 import (
+	"log"
 	"math"
 	"strconv"
 	"strings"
@@ -149,6 +150,7 @@ func renderDefaultGeneralHelpEmbed(router *Router, page int) (*discordgo.Message
 	// Prepare the fields for the embed
 	fields := make([]*discordgo.MessageEmbedField, len(displayCommands))
 	for index, command := range displayCommands {
+		log.Println(index, command)
 		if !command.Hidden {
 			fields[index] = &discordgo.MessageEmbedField{
 				Name:   command.Name,

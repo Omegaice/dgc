@@ -41,26 +41,26 @@ func (router *Router) RegisterDefaultHelpCommand(session *discordgo.Session, rat
 		reactionName := event.Emoji.Name
 		switch reactionName {
 		case "⬅️":
+			// Remove the reaction
+			session.MessageReactionRemove(channelID, messageID, reactionName, userID)
+
 			// Update the help message
 			embed, newPage := renderDefaultGeneralHelpEmbed(router, page-1)
 			page = newPage
 			session.ChannelMessageEditEmbed(channelID, messageID, embed)
-
-			// Remove the reaction
-			session.MessageReactionRemove(channelID, messageID, reactionName, userID)
 			break
 		case "❌":
 			// Delete the help message
 			session.ChannelMessageDelete(channelID, messageID)
 			break
 		case "➡️":
+			// Remove the reaction
+			session.MessageReactionRemove(channelID, messageID, reactionName, userID)
+
 			// Update the help message
 			embed, newPage := renderDefaultGeneralHelpEmbed(router, page+1)
 			page = newPage
 			session.ChannelMessageEditEmbed(channelID, messageID, embed)
-
-			// Remove the reaction
-			session.MessageReactionRemove(channelID, messageID, reactionName, userID)
 			break
 		}
 

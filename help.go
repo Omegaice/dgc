@@ -1,7 +1,6 @@
 package dgc
 
 import (
-	"log"
 	"math"
 	"strconv"
 	"strings"
@@ -41,29 +40,26 @@ func (router *Router) RegisterDefaultHelpCommand(session *discordgo.Session, rat
 		reactionName := event.Emoji.Name
 		switch reactionName {
 		case "⬅️":
-			// Remove the reaction
-			err := session.MessageReactionRemove(channelID, messageID, reactionName, userID)
-			if err != nil {
-				log.Println(err)
-			}
-
 			// Update the help message
 			embed, newPage := renderDefaultGeneralHelpEmbed(router, page-1)
 			page = newPage
 			session.ChannelMessageEditEmbed(channelID, messageID, embed)
+
+			// Remove the reaction
+			session.MessageReactionRemove(channelID, messageID, reactionName, userID)
 			break
 		case "❌":
 			// Delete the help message
 			session.ChannelMessageDelete(channelID, messageID)
 			break
 		case "➡️":
-			// Remove the reaction
-			session.MessageReactionRemove(channelID, messageID, reactionName, userID)
-
 			// Update the help message
 			embed, newPage := renderDefaultGeneralHelpEmbed(router, page+1)
 			page = newPage
 			session.ChannelMessageEditEmbed(channelID, messageID, embed)
+
+			// Remove the reaction
+			session.MessageReactionRemove(channelID, messageID, reactionName, userID)
 			break
 		}
 
@@ -210,26 +206,7 @@ func renderDefaultSpecificHelpEmbed(ctx *Ctx, command *Command) *discordgo.Messa
 		}
 	}
 
-	// Define the sub commands string
-	subCommands := "No sub commands"
-	if len(command.SubCommands) > 0 {
-		subCommandNames := []string{}
-		for _, subCommand := range command.SubCommands {
-			if !subCommand.Hidden {
-				subCommandNames = append(subCommandNames, subCommand.Name)
-			}
-		}
-		subCommands = "`" + strings.Join(subCommandNames, "`, `") + "`"
-	}
-
-	// Define the aliases string
-	aliases := "No aliases"
-	if len(command.Aliases) > 0 {
-		aliases = "`" + strings.Join(command.Aliases, "`, `") + "`"
-	}
-
-	// Return the embed
-	return &discordgo.MessageEmbed{
+	toSend := &discordgo.MessageEmbed{
 		Type:        "rich",
 		Title:       "Command Information",
 		Description: "Displaying the information for the `" + command.Name + "` command.",
@@ -241,31 +218,57 @@ func renderDefaultSpecificHelpEmbed(ctx *Ctx, command *Command) *discordgo.Messa
 				Value:  "`" + command.Name + "`",
 				Inline: false,
 			},
-			{
-				Name:   "Sub Commands",
-				Value:  subCommands,
-				Inline: false,
-			},
-			{
-				Name:   "Aliases",
-				Value:  aliases,
-				Inline: false,
-			},
-			{
-				Name:   "Description",
-				Value:  "```" + command.Description + "```",
-				Inline: false,
-			},
-			{
-				Name:   "Usage",
-				Value:  "```" + prefix + command.Usage + "```",
-				Inline: false,
-			},
-			{
-				Name:   "Example",
-				Value:  "```" + prefix + command.Example + "```",
-				Inline: false,
-			},
 		},
 	}
+
+	// Define the sub commands string
+	if len(command.SubCommands) > 0 {
+		subCommandNames := []string{}
+		for _, subCommand := range command.SubCommands {
+			if !subCommand.Hidden {
+				subCommandNames = append(subCommandNames, subCommand.Name)
+			}
+		}
+
+		toSend.Fields = append(toSend.Fields, &discordgo.MessageEmbedField{
+			Name:   "Sub Commands",
+			Value:  "`" + strings.Join(subCommandNames, "`, `") + "`",
+			Inline: false,
+		})
+	}
+
+	// Define the aliases string
+	if len(command.Aliases) > 0 {
+		toSend.Fields = append(toSend.Fields, &discordgo.MessageEmbedField{
+			Name:   "Aliases",
+			Value:  "`" + strings.Join(command.Aliases, "`, `") + "`",
+			Inline: false,
+		})
+	}
+
+	if len(command.Description) > 0 {
+		toSend.Fields = append(toSend.Fields, &discordgo.MessageEmbedField{
+			Name:   "Description",
+			Value:  "```" + command.Description + "```",
+			Inline: false,
+		})
+	}
+
+	if len(command.Usage) > 0 {
+		toSend.Fields = append(toSend.Fields, &discordgo.MessageEmbedField{
+			Name:   "Usage",
+			Value:  "```" + prefix + command.Usage + "```",
+			Inline: false,
+		})
+	}
+
+	if len(command.Example) > 0 {
+		toSend.Fields = append(toSend.Fields, &discordgo.MessageEmbedField{
+			Name:   "Example",
+			Value:  "```" + prefix + command.Example + "```",
+			Inline: false,
+		})
+	}
+
+	return toSend
 }
